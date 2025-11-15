@@ -218,7 +218,7 @@ function s.target(e,c)
 end
 
 ------------------------------------
--- ③ 除外されているim@scgsの種類数 × 500 回復
+-- ③ 除外されているim@scgsの種類数 × 200 回復
 ------------------------------------
 function s.rcfilter(c)
     return c:IsSetCard(SETCODE) and c:IsType(TYPE_MONSTER)
@@ -227,12 +227,12 @@ function s.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
     local g=Duel.GetMatchingGroup(s.rcfilter,tp,LOCATION_REMOVED,0,nil)
     local ct=g:GetClassCount(Card.GetCode)
     if chk==0 then return ct>0 end
-    Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,ct*500)
+    Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,ct*200)
 end
 function s.recop(e,tp,eg,ep,ev,re,r,rp)
     local g=Duel.GetMatchingGroup(s.rcfilter,tp,LOCATION_REMOVED,0,nil)
     local ct=g:GetClassCount(Card.GetCode)
     if ct>0 then
-        Duel.Recover(tp,ct*500,REASON_EFFECT)
+        Duel.Recover(tp,ct*200,REASON_EFFECT)
     end
 end
