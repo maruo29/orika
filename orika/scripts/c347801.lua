@@ -5,10 +5,41 @@ local ARISU_ID=346001         -- im@scgs - 橘ありす
 local FUMIKA_ID=347701        -- im@scgs - 鷺沢文香
 local SUMMON_TYPE_PAIR=SUMMON_TYPE_SPECIAL+0x2000 -- 好きな専用召喚種別（任意）
 
+------------------------------------
+-- im@scgs共通：スクリプトから imascgs_name のリストを取得
+------------------------------------
+function s.get_imascgs_name_list(c)
+    if not c then return nil end
+    local code=c:GetOriginalCode()
+    local mt=_G["c"..code]
+    if not mt then return nil end
+
+    -- ① 新方式：テーブルで定義されている場合
+    if type(mt.imascgs_name)=="table" then
+        return mt.imascgs_name
+    end
+    -- ② 旧方式：1つだけ数値で持っている場合も配列にラップする
+    if type(mt.imascgs_name)=="number" then
+        return {mt.imascgs_name}
+    end
+    return nil
+end
+
+-- 指定したコードが「名が記された」中に含まれているか
+function s.has_imascgs_name(c, target_code)
+    local list=s.get_imascgs_name_list(c)
+    if not list then return false end
+    for _,v in ipairs(list) do
+        if v==target_code then
+            return true
+        end
+    end
+    return false
+end
+
 function s.initial_effect(c)
     -- このカードは「橘ありす」として扱う（フィールド・墓地）
-    s.imascgs_name=ARISU_ID
-    s.imascgs_name=FUMIKA_ID
+    s.imascgs_name = {ARISU_ID, FUMIKA_ID}
     aux.EnableChangeCode(c,ARISU_ID,LOCATION_MZONE+LOCATION_GRAVE)
     aux.AddCodeList(c,ARISU_ID)
     c:EnableReviveLimit()
@@ -112,16 +143,13 @@ end
 ------------------------------------
 -- ① EXデッキから「名が記されたカード」を除外してなりきり
 ------------------------------------
--- 「im@scgs - 橘ありす」または「im@scgs - 鷺沢文香」の imascgs_name を持つカード
 function s.mode_filter(c)
-    -- スクリプト側に設定された imascgs_name を参照
-    local name_code=s.get_imascgs_name(c)
     return c:IsSetCard(SETCODE)
         and c:IsType(TYPE_MONSTER+TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ+TYPE_LINK)
-        and name_code~=nil
-        and (name_code==ARISU_ID or name_code==FUMIKA_ID)
         and c:IsAbleToRemove()
+        and (s.has_imascgs_name(c,ARISU_ID) or s.has_imascgs_name(c,FUMIKA_ID))
 end
+
 
 function s.mode_tg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then
@@ -138,14 +166,20 @@ function s.mode_op(e,tp,eg,ep,ev,re,r,rp)
     local tc=g:GetFirst()
     if not tc then return end
 
-    -- 除外前に imascgs_name を拾っておく
-    local name_code=s.get_imascgs_name(tc)
+    -- 除外前に「どの名前に化けるか」を決める
+    local change_code=nil
+    if s.has_imascgs_name(tc,ARISU_ID) then
+        change_code=ARISU_ID
+    elseif s.has_imascgs_name(tc,FUMIKA_ID) then
+        change_code=FUMIKA_ID
+    end
+
     if Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)==0 then return end
 
-    -- imascgs_name が取れなければ保険でそのカードのコードを使う
-    local change_code=name_code or tc:GetCode()
+    -- 保険：どちらにも該当しない場合はそのカード自身のコード
+    change_code=change_code or tc:GetCode()
 
-    -- このターン中、このカードは imascgs_name のモンスターとして扱う
+    -- このターン中、このカードは選んだコードのモンスターとして扱う
     local e1=Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_SINGLE)
     e1:SetCode(EFFECT_CHANGE_CODE)
@@ -153,7 +187,6 @@ function s.mode_op(e,tp,eg,ep,ev,re,r,rp)
     e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
     c:RegisterEffect(e1)
 end
-
 
 ------------------------------------
 -- ② 相手フィールドのモンスターを守備表示にする
