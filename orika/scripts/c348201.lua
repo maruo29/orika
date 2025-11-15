@@ -72,6 +72,14 @@ function s.initial_effect(c)
 	e0:SetValue(1)
 	c:RegisterEffect(e0)
 
+    local eLMT=Effect.CreateEffect(c)
+    eLMT:SetType(EFFECT_TYPE_SINGLE)
+    eLMT:SetCode(EFFECT_SPSUMMON_CONDITION)
+    eLMT:SetRange(LOCATION_EXTRA)
+    eLMT:SetProperty(EFFECT_FLAG_SINGLE_RANGE+EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+    eLMT:SetValue(aux.linklimit)
+    c:RegisterEffect(eLMT)
+
 	--------------------------------------------------------
 	-- ①：通常モンスターを素材にリンク召喚 → 永続魔法化
 	--------------------------------------------------------
