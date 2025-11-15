@@ -45,7 +45,29 @@ function s.initial_effect(c)
     c:EnableReviveLimit()
 
     ------------------------------------
-    -- 手札からのみの特殊召喚条件
+    -- 通常召喚・セット不可
+    ------------------------------------
+    local eNS=Effect.CreateEffect(c)
+    eNS:SetType(EFFECT_TYPE_SINGLE)
+    eNS:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+    eNS:SetCode(EFFECT_CANNOT_SUMMON)
+    c:RegisterEffect(eNS)
+    local eSet=eNS:Clone()
+    eSet:SetCode(EFFECT_CANNOT_MSET)
+    c:RegisterEffect(eSet)
+
+    ------------------------------------
+    -- このカードは①の方法でのみ特殊召喚できる
+    ------------------------------------
+    local eSp=Effect.CreateEffect(c)
+    eSp:SetType(EFFECT_TYPE_SINGLE)
+    eSp:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+    eSp:SetCode(EFFECT_SPSUMMON_CONDITION)
+    eSp:SetValue(aux.FALSE)
+    c:RegisterEffect(eSp)
+
+    ------------------------------------
+    -- 手札からのみの特殊召喚条件（あなたの①の方法）
     ------------------------------------
     local e0=Effect.CreateEffect(c)
     e0:SetType(EFFECT_TYPE_FIELD)
