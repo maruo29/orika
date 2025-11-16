@@ -22,15 +22,15 @@ function s.initial_effect(c)
 	e3:SetOperation(s.smop)
 	c:RegisterEffect(e3)
 
-    local e4=Effect.CreateEffect(c)
-    e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
-    e4:SetType(EFFECT_TYPE_IGNITION)
-    e4:SetRange(LOCATION_SZONE)          -- 魔法・罠ゾーンにあるときのみ
-    e4:SetCountLimit(1,id+300)          -- 1ターン1回制限
-    e4:SetCost(s.spcost3)
-    e4:SetTarget(s.sptg3)
-    e4:SetOperation(s.spop3)
-    c:RegisterEffect(e4)
+    -- local e4=Effect.CreateEffect(c)
+    -- e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    -- e4:SetType(EFFECT_TYPE_IGNITION)
+    -- e4:SetRange(LOCATION_SZONE)          -- 魔法・罠ゾーンにあるときのみ
+    -- e4:SetCountLimit(1,id+300)          -- 1ターン1回制限
+    -- e4:SetCost(s.spcost3)
+    -- e4:SetTarget(s.sptg3)
+    -- e4:SetOperation(s.spop3)
+    -- c:RegisterEffect(e4)
 end
 
 function s.thfilter(c)
