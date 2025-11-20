@@ -58,7 +58,7 @@ function s.initial_effect(c)
 
 	-- 破壊・離脱身代わり（③）
 	local e5=Effect.CreateEffect(c)
-	e5:SetType(EFFECT_TYPE_SINGLE)
+	e5:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e5:SetCode(EFFECT_DESTROY_REPLACE)
 	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e5:SetRange(LOCATION_FZONE)
@@ -211,17 +211,24 @@ end
 function s.repfilter(c)
 	return c:IsSetCard(SETCODE) and c:IsAbleToDeck()
 end
+
 function s.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	if chk==0 then 
-		return c:IsReason(REASON_EFFECT+REASON_BATTLE)
+	if chk==0 then
+		-- フィールド魔法が「ルールで墓地に送られる」場合はNG
+		-- それ以外の破壊ならOK（サイクロンなど）
+		return not c:IsReason(REASON_RULE)
 			and Duel.IsExistingMatchingCard(s.repfilter,tp,LOCATION_REMOVED,0,2,nil)
 	end
 	if Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
 		local g=Duel.SelectMatchingCard(tp,s.repfilter,tp,LOCATION_REMOVED,0,2,2,nil)
-		Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-		return true
-	else
-		return false
+		if #g>0 then
+			Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT+REASON_REPLACE)
+			return true
+		end
 	end
+	return false
 end
+
+
