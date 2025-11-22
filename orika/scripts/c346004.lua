@@ -41,13 +41,13 @@ function s.initial_effect(c)
     -- 除外された場合の効果(ターン1)
     local e3=Effect.CreateEffect(c)
     e3:SetDescription(aux.Stringid(id,0))
-    e3:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+    e3:SetCategory(CATEGORY_DRAW+CATEGORY_REMOVE)
     e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
     e3:SetProperty(EFFECT_FLAG_DELAY)
-    e3:SetCountLimit(1,id)
+    e3:SetCountLimit(1,id)           -- このカード名の③の効果は1ターンに1度
     e3:SetCode(EVENT_REMOVE)
-    e3:SetTarget(s.target)
-    e3:SetOperation(s.activate)
+    e3:SetTarget(s.drtg)
+    e3:SetOperation(s.drop)
     c:RegisterEffect(e3)
 end
 
@@ -67,16 +67,27 @@ function s.rmtarget(e,c)
 end
 
 -- 除外時ドロー効果
-function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,1)
-	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,PLAYER_ALL,1)
+-- ③：除外時ドロー＆手札除外
+function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then
+        return Duel.IsPlayerCanDraw(tp,1)
+            and Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,LOCATION_HAND,0,1,nil)
+    end
+    -- 自分だけ1ドロー
+    Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
+    -- 手札から1枚除外
+    Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,tp,LOCATION_HAND)
 end
 
-function s.activate(e,tp,eg,ep,ev,re,r,rp)
+function s.drop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.Draw(tp,1,REASON_EFFECT)>0 then
 		Duel.BreakEffect()
 		Duel.ShuffleHand(tp)
-		Duel.DiscardHand(tp,aux.TRUE,1,1,REASON_EFFECT+REASON_DISCARD)
+        -- 手札から1枚選んで除外
+        Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+        local g=Duel.SelectMatchingCard(tp,Card.IsAbleToRemove,tp,LOCATION_HAND,0,1,1,nil)
+        if #g>0 then
+            Duel.Remove(g,POS_FACEUP,REASON_EFFECT)
+        end
 	end
 end
