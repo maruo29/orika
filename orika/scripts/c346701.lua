@@ -41,8 +41,14 @@ function s.initial_effect(c)
 	e3:SetCode(EFFECT_CANNOT_ACTIVATE)
 	e3:SetRange(LOCATION_FZONE)
 	e3:SetTargetRange(0,1)
-	e3:SetValue(1)
-	e3:SetCondition(s.ct5con)
+	e3:SetCondition(function(e)
+		-- 「5種類以上」かつ「自分im@scgsモンスターの戦闘中」のときだけ制限
+		return s.ct5con(e) and s.actcon(e)
+	end)
+	e3:SetValue(function(e,re,tp)
+		-- 対象はすでに「相手プレイヤー」に絞られているので true を返せば発動不可
+		return true
+	end)
 	c:RegisterEffect(e3)
 
 	-- ●19種類以上：5体戻してデュエル勝利（デバッグ中は1種類）
