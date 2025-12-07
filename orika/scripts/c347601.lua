@@ -3,6 +3,8 @@ local s,id=GetID()
 local SETCODE=0x2fd286a
 local SHOE_ID=346002 -- 魔法の靴
 local ARISU_CODE=346001
+local SUMMON_TYPE_SHOE=SUMMON_TYPE_SPECIAL+0x1000 -- 魔法の靴特殊召喚
+
 
 function s.initial_effect(c)
     s.imascgs_name=ARISU_CODE

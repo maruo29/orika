@@ -3,6 +3,31 @@ local s,id=GetID()
 local SETCODE=0x2fd286a
 local SUMMON_TYPE_SHOE=SUMMON_TYPE_SPECIAL+0x1000 -- 「魔法の靴」による特殊召喚
 
+-- スクリプトテーブルから imascgs_name_list を取得
+function s.get_name_list(c)
+    if not c then return nil end
+    local code = c:GetOriginalCode()
+    local mt = _G["c"..code]
+    if mt and mt.imascgs_name_list then
+        return mt.imascgs_name_list
+    end
+    -- 後方互換：昔の "s.imascgs_name = xxx" にも対応したいなら
+    if mt and mt.imascgs_name then
+        return { mt.imascgs_name }
+    end
+    return nil
+end
+
+-- カード c が「tcode の名が記されたカード」かどうか
+function s.has_name(c,tcode)
+    local list = s.get_name_list(c)
+    if not list then return false end
+    for _,v in ipairs(list) do
+        if v==tcode then return true end
+    end
+    return false
+end
+
 function s.initial_effect(c)
 	--【起動効果】特殊召喚
 	local e1=Effect.CreateEffect(c)
@@ -56,9 +81,9 @@ end
 
 -- デッキから特殊召喚する対象
 function s.Filter2(c,e,tp,tcode)
-	return c.imascgs_name==tcode and c:IsType(TYPE_MONSTER)
-		and (c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP)
-			or c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_SPECIAL,tp,true,false,POS_FACEUP)) -- EX側考慮
+    return s.has_name(c,tcode) and c:IsType(TYPE_MONSTER)
+        and (c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP)
+            or c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_SPECIAL,tp,true,false,POS_FACEUP))
 end
 
 -- 対象設定

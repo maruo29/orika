@@ -61,7 +61,7 @@ end
 
 -- デッキから橘ありすの名前が記載されたカードを手札に加えるフィルター
 function s.thfilter(c)
-    return c.imascgs_name==346001 and c:IsAbleToHand()
+    return c.imascgs_name==346001 and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
 
 -- デッキから手札に加える対象選択

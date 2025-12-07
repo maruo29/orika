@@ -9,7 +9,7 @@ function s.initial_effect(c)
 	-- 基本設定
 	------------------------------------
 	-- このカードはフィールド・墓地に存在する限り、「im@scgs - 関裕美」として扱う
-	s.imascgs_name_list=HIROMI_ID
+	s.imascgs_name_list={HIROMI_ID}
 	s.imascgs_name=HIROMI_ID
 	aux.EnableChangeCode(c,HIROMI_ID,LOCATION_MZONE+LOCATION_GRAVE)
 	aux.AddCodeList(c,HIROMI_ID)
