@@ -64,11 +64,11 @@ function s.initial_effect(c)
 	--------------------------------
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
-	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_REMOVE)
-	e3:SetProperty(EFFECT_FLAG_DELAY)
 	e3:SetOperation(s.regop)
 	c:RegisterEffect(e3)
+
 end
 
 --------------------------------
@@ -192,34 +192,31 @@ function s.disop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 
+
 --------------------------------
--- ③用：除外された次の自分スタンバイフェイズに戻る
+-- ③用：除外された「次のスタンバイフェイズ」に戻る
 --------------------------------
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if not c:IsLocation(LOCATION_REMOVED) or not c:IsFaceup() then return end
-	-- 次の自分スタンバイフェイズにトリガーする効果をセット
+	-- 除外されていて表側であることだけ確認
+	if not (c:IsLocation(LOCATION_REMOVED) and c:IsFaceup()) then return end
+
+	-- 「次のスタンバイフェイズ」で1回だけ起動するフィールド効果を登録
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,2))
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_PHASE+PHASE_STANDBY)
-	e1:SetRange(LOCATION_REMOVED)
-	e1:SetCountLimit(1)
-	e1:SetLabel(Duel.GetTurnCount())
-	e1:SetCondition(s.retcon)
+	e1:SetRange(LOCATION_REMOVED)              -- 除外ゾーンにいるこのカードの効果として存在
+	e1:SetCountLimit(1)                        -- 1回だけ
 	e1:SetTarget(s.rettg)
 	e1:SetOperation(s.retop)
+	-- ★次に訪れるスタンバイフェイズの終了時に自動で消える
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_STANDBY)
 	c:RegisterEffect(e1)
 end
 
-function s.retcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 「除外されたターンのスタンバイフェイズ」はスキップして、
-	-- その次の自分のスタンバイフェイズのみ
-	return Duel.GetTurnPlayer()==tp and Duel.GetTurnCount()~=e:GetLabel()
-end
-
 function s.rettg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 誰のスタンバイかは問わない（「次のスタンバイフェイズ」なので）
 	if chk==0 then
 		return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
 	end
@@ -227,7 +224,8 @@ end
 
 function s.retop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if not c:IsRelateToEffect(e) then return end
+	-- まだ除外ゾーンにいて表側か？
+	if not (c:IsRelateToEffect(e) and c:IsLocation(LOCATION_REMOVED) and c:IsFaceup()) then return end
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
 	Duel.MoveToField(c,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
 end
